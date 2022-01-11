@@ -1,31 +1,31 @@
 const bleno = require('@abandonware/bleno');
 const EventEmitter = require('events');
 const CyclingPowerService = require('./cycling-power-service');
-//const FitnessMachineService = require('./fitness-machine-service');
+const FitnessMachineService = require('./fitness-machine-service');
 const HeartRateService = require('./heart-rate-service');
 const CyclingSpeedAndCadenceService = require('./cycling-speed-and-cadence-service.js');
 
-var keiserDeviceId = -1;
-var isPoweredOn = false;
+var keiserDeviceId = 1;
+var isPoweredOn = true;
 
 class KeiserBLE extends EventEmitter {
 
 	constructor() {
 		super();
 
-		this.setName();		
+		this.setName();
 
-		this.cps = new CyclingPowerService();
-		//this.fms = new FitnessMachineService();
-		this.hrs = new HeartRateService();
-		this.csc = new CyclingSpeedAndCadenceService();
+		// this.cps = new CyclingPowerService();
+		this.fms = new FitnessMachineService();
+		// this.hrs = new HeartRateService();
+		// this.csc = new CyclingSpeedAndCadenceService();
 
 		let self = this;
 		console.log(`[${this.name} starting]`);
 
 		bleno.on('stateChange', (state) => {
 			console.log(`[${this.name} stateChange] new state: ${state}`);
-			
+
 			self.emit('stateChange', state);
 
 			if (state === 'poweredOn') {
@@ -44,11 +44,11 @@ class KeiserBLE extends EventEmitter {
 
 			if (!error) {
 				bleno.setServices([
-					self.cps, 
-					//self.fms,
-					self.hrs,
-					self.csc
-				], 
+					// self.cps,
+					self.fms,
+					// self.hrs,
+					// self.csc
+				],
 				(error) => {
 					console.log(`[${this.name} setServices] ${(error ? 'error ' + error : 'success')}`);
 				});
@@ -88,13 +88,14 @@ class KeiserBLE extends EventEmitter {
 
 	// notify BLE Client
 	notifyClient(event) {
-		this.cps.notify(event);
-		//this.fms.notify(event);
-		this.hrs.notify(event);
-		this.csc.notify(event);
+		// this.cps.notify(event);
+		this.fms.notify(event);
+		// this.hrs.notify(event);
+		// this.csc.notify(event);
 	};
 
 	setDeviceId(deviceId) {
+		console.log("DEVICE_ID", deviceId)
 		keiserDeviceId = deviceId;
 		this.setName();
 		this.checkStartConditions();
@@ -104,19 +105,19 @@ class KeiserBLE extends EventEmitter {
 		if (keiserDeviceId == -1) {
 			this.name = "KeiserM3";
 		} else {
-			this.name = "KeiserM3-" + keiserDeviceId;
+			this.name = "Node-KeiserM3-" + keiserDeviceId;
 		}
 
-		process.env['BLENO_DEVICE_NAME'] = this.name; 
+		process.env['BLENO_DEVICE_NAME'] = this.name;
 	}
 
 	checkStartConditions() {
 		if (isPoweredOn && keiserDeviceId != -1) {
 			bleno.startAdvertising(this.name, [
-				this.cps.uuid, 
-				//this.fms.uuid,
-				this.hrs.uuid,
-				this.csc.uuid
+				// this.cps.uuid,
+				this.fms.uuid,
+				// this.hrs.uuid,
+				// this.csc.uuid
 			]);
 		}
 	}

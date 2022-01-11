@@ -1,9 +1,9 @@
 var Bleno = require('@abandonware/bleno');
-var DEBUG = false;
+var DEBUG = true;
 const FLAG_HASCRANKDATA = (1<<1);
 
 class CscMeasurementCharacteristic extends  Bleno.Characteristic {
- 
+
   constructor() {
     super({
       uuid: '2A5B',
@@ -36,20 +36,20 @@ class CscMeasurementCharacteristic extends  Bleno.Characteristic {
       // ignore events that do not have all of the data expected.
       return this.RESULT_SUCCESS;
     }
-  
+
     if (this._updateValueCallback) {
 		if (DEBUG) console.log("[cscService] Notify");
 		var buffer = Buffer.alloc(5);
-	        
+
 	        let flags = 0;
 	        flags |= FLAG_HASCRANKDATA;
 		buffer.writeUInt8(flags, 0);
-	    
+
 	        const revolutions16bit = event.crankcount & 0xffff;
 	        const timestamp16bit = event.cranktime & 0xffff;
 	        buffer.writeUInt16LE(revolutions16bit, 1);
 	        buffer.writeUInt16LE(timestamp16bit, 3);
-	  
+
       this._updateValueCallback(buffer);
     }
     return this.RESULT_SUCCESS;

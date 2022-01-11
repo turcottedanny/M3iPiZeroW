@@ -1,11 +1,11 @@
 var Bleno = require('@abandonware/bleno');
-var DEBUG = false;
+var DEBUG = true;
 const FLAG_HASCRANKDATA = (1<<5);
 // Spec
 //https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.cycling_power_measurement.xml
 
 class CyclingPowerMeasurementCharacteristic extends  Bleno.Characteristic {
- 
+
   constructor() {
     super({
       uuid: '2A63',
@@ -43,28 +43,28 @@ class CyclingPowerMeasurementCharacteristic extends  Bleno.Characteristic {
       // ignore events that do not have all of the data expected.
       return this.RESULT_SUCCESS;
     }
-  
+
     if (this._updateValueCallback) {
 		if (DEBUG) console.log("[powerService] Notify");
 		var buffer = Buffer.alloc(8);
-	        
+
 	        let flags = 0;
 	        flags |= FLAG_HASCRANKDATA;
 		buffer.writeUInt16LE(flags, 0);
-	    
+
 	        const power = event.power;
 	        const revolutions16bit = event.crankcount & 0xffff;
 	        const timestamp16bit = event.cranktime & 0xffff;
 		buffer.writeInt16LE(power, 2);
 	        buffer.writeUInt16LE(revolutions16bit, 4);
 	        buffer.writeUInt16LE(timestamp16bit, 6);
-	  
+
       this._updateValueCallback(buffer);
     }
     return this.RESULT_SUCCESS;
   }
-  
-  
+
+
 };
 
 module.exports = CyclingPowerMeasurementCharacteristic;

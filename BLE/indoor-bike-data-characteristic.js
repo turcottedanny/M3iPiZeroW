@@ -1,5 +1,5 @@
 var Bleno = require('@abandonware/bleno');
-var DEBUG = false;
+var DEBUG = true;
 
 class IndoorBikeDataCharacteristic extends Bleno.Characteristic {
 
@@ -27,23 +27,23 @@ class IndoorBikeDataCharacteristic extends Bleno.Characteristic {
 
 	onUnsubscribe() {
 		if (DEBUG) console.log('[IndoorBikeDataCharacteristic] client unsubscribed');
-		this._updateValueCallback = null;
+		// this._updateValueCallback = null;
 		return this.RESULT_UNLIKELY_ERROR;
 	};
 
 	notify(event) {
 		if (!('power' in event) && !('hr' in event) && !('ftmsrpm' in event)) {
 			// ignore events that do not have complete data set
-			return this.RESULT_SUCCESS; 
+			return this.RESULT_SUCCESS;
 		}
 
-		// For ftms reference, see the Fitness Machine Service BLE Specification at 
+		// For ftms reference, see the Fitness Machine Service BLE Specification at
 		// https://www.bluetooth.com/specifications/specs/fitness-machine-service-1-0/
-		// Note that info on data types for Indoor Bike Data are detailed (buried!!) in 
+		// Note that info on data types for Indoor Bike Data are detailed (buried!!) in
 		// the Control Point portion of the document. Also note the spec is in error
 		// for setting of flag bit 2.  Bit 2 must be set to 1 to indicate instanteous
 		// cadence (rpm) is present.
-		
+
 		if (this._updateValueCallback) {
 			if (DEBUG) console.log("[IndoorBikeDataCharacteristic] Notify");
 			var buffer = Buffer.alloc(7);
@@ -54,7 +54,7 @@ class IndoorBikeDataCharacteristic extends Bleno.Characteristic {
 			var ftmsrpm = event.ftmsrpm & 0xffff;  // ensure ftmsrpm is a 16-bit integer
 			if (DEBUG) console.log("[IndoorBikeDataCharacteristic] rpm: " + (ftmsrpm/2));
 			buffer.writeUInt16LE(ftmsrpm, 2);  // ftms spec is UINT16; resolution is 0.5 rpm
-			
+
 			var power = event.power & 0xffff; // ensure power is a 16-bit integer
 			if (DEBUG) console.log("[IndoorBikeDataCharacteristic] power: " + power);
 			buffer.writeInt16LE(power, 4); // ftms spec is SINT16

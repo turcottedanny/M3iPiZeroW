@@ -1,5 +1,5 @@
 const Bleno = require('@abandonware/bleno');
-var DEBUG = false;
+var DEBUG = true;
 
 // Spec
 // Status op code
